@@ -42,12 +42,19 @@ module.exports = {
 
     if(!name || !cnpj) return res.json({ message: 'Name and CNPJ are required' });
 
-    const exists = await Company.findOne({ cnpj });
-    const idIsDifferent = String(company_id) !== String(exists._id);
+    let exists;
+
+    try {
+      exists = await Company.findOne({ cnpj });
+    } catch {
+      exists = false;
+    }
+
+    const idIsDifferent = exists ? (String(company_id) !== String(exists._id)) : (false);
 
     if(exists && idIsDifferent) return res.json({ message: 'CNPJ already exists' });
 
-    await Company.findByIdAndUpdate(company_id);
+    await Company.findByIdAndUpdate(company_id, { name, cnpj });
 
     return res.send();
   },
